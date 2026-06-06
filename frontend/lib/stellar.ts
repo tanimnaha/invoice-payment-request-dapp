@@ -1,4 +1,4 @@
-import { isConnected, getPublicKey, signTransaction } from '@stellar/freighter-api';
+import { isConnected, getAddress, signTransaction } from '@stellar/freighter-api';
 import { Horizon, TransactionBuilder } from '@stellar/stellar-sdk';
 
 const NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015';
@@ -18,7 +18,8 @@ export function getNetworkConfig() {
  */
 export async function isFreighterInstalled(): Promise<boolean> {
   try {
-    return await isConnected();
+    const result = await isConnected();
+    return !!result.isConnected;
   } catch (error) {
     console.error('Error checking Freighter installation:', error);
     return false;
@@ -35,7 +36,11 @@ export async function getFreighterPublicKey(): Promise<string> {
   }
 
   try {
-    const publicKey = await getPublicKey();
+    const result = await getAddress();
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    const publicKey = result.address;
     if (!publicKey) {
       throw new Error('Could not retrieve public key. Please unlock your Freighter wallet and try again.');
     }
@@ -99,10 +104,13 @@ export async function signAndSubmitTransaction(xdr: string): Promise<any> {
   let signedXdr: string;
   try {
     // Request signing from Freighter
-    signedXdr = await signTransaction(xdr, {
-      network: 'TESTNET',
+    const result = await signTransaction(xdr, {
       networkPassphrase: NETWORK_PASSPHRASE,
     });
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    signedXdr = result.signedTxXdr;
   } catch (error: any) {
     throw new Error(`Transaction signing canceled or failed: ${error.message || error}`);
   }

@@ -1,5 +1,9 @@
 # Stellar SafePay — Decentralized Invoicing & Payment Portal
 
+> [!IMPORTANT]
+> **Deployed Contract ID**: `CBQR3YKFB3AZSCVZVTMDL7HAQK5IA43DURQDXPH5FYSSNX6I63VK2DLN`  
+> **Stellar.expert Testnet Explorer**: [View Deployed Contract on Stellar Explorer](https://stellar.expert/explorer/testnet/contract/CBQR3YKFB3AZSCVZVTMDL7HAQK5IA43DURQDXPH5FYSSNX6I63VK2DLN)
+
 Stellar SafePay is an on-chain invoice and payment request system built on the Stellar network using Soroban smart contracts. It enables freelancers to issue tamper-proof payment requests directly on-chain, storing the invoice ID, amount (in XLM/Stroops), due date, and detailed description on the ledger. Clients/payers can connect their Freighter wallet, view their outstanding and past invoices, and settle payments atomically and directly on-chain using smart contract methods.
 
 ---
@@ -124,7 +128,7 @@ README.md                   # Complete step-by-step developer walkthrough (This 
    ```
 2. Open the newly created `frontend/.env.local` file and paste the Contract ID you copied in **Step 3** into the `NEXT_PUBLIC_CONTRACT_ID` variable:
    ```env
-   NEXT_PUBLIC_CONTRACT_ID=CC5Y...YOUR_CONTRACT_ID...
+   NEXT_PUBLIC_CONTRACT_ID=CBQR3YKFB3AZSCVZVTMDL7HAQK5IA43DURQDXPH5FYSSNX6I63VK2DLN
    NEXT_PUBLIC_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
    NEXT_PUBLIC_RPC_URL=https://soroban-testnet.stellar.org
    NEXT_PUBLIC_HORIZON_URL=https://horizon-testnet.stellar.org

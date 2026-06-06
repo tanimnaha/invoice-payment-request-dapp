@@ -1,0 +1,27 @@
+# Rust / Cargo compiled artifacts
+/contracts/target/
+/contracts/Cargo.lock
+
+# Node / Next.js
+/frontend/node_modules/
+/frontend/.next/
+/frontend/out/
+/frontend/build/
+
+# Local Environment Variables & Secrets
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+/frontend/.env
+
+# IDEs and OS
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

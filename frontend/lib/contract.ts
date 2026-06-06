@@ -1,5 +1,5 @@
 import {
-  SorobanRpc,
+  rpc,
   TransactionBuilder,
   Address,
   Contract,
@@ -11,12 +11,35 @@ import {
 import { getNetworkConfig, signAndSubmitTransaction } from './stellar';
 
 const { rpcUrl, networkPassphrase, horizonUrl } = getNetworkConfig();
-const rpcServer = new SorobanRpc.Server(rpcUrl);
+const rpcServer = new rpc.Server(rpcUrl);
 
 // Read from process.env, fallback to a placeholder if not set yet during build
 const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || '';
 // XLM Native Token contract address on Stellar Testnet
 const XLM_TOKEN_ADDRESS = 'CDLZFC3SYJYDZT7K67VZ75HPJGWUVNUR2G4KMT52JUQKGW5AX3CEGCHB';
+
+// Minimal stub for Account if loading from Horizon fails (e.g. un-funded accounts)
+class Account {
+  private _accountId: string;
+  private _sequence: string;
+
+  constructor(accountId: string, sequence: string) {
+    this._accountId = accountId;
+    this._sequence = sequence;
+  }
+
+  accountId(): string {
+    return this._accountId;
+  }
+
+  sequenceNumber(): string {
+    return this._sequence;
+  }
+
+  incrementSequenceNumber(): void {
+    this._sequence = (BigInt(this._sequence) + 1n).toString();
+  }
+}
 
 export interface InvoiceData {
   id: string;
@@ -109,10 +132,8 @@ export async function getInvoice(invoiceId: string): Promise<InvoiceData | null>
 
   try {
     const simulation = await rpcServer.simulateTransaction(tx);
-    if (SorobanRpc.Api.isSimulationSuccess(simulation) && simulation.result) {
-      const scVal = xdr.TransactionMeta.fromXDR(simulation.result.retval, 'base64');
-      const scValObj = xdr.ScVal.fromXDR(simulation.result.retval, 'base64');
-      const rawNative = scValToNative(scValObj);
+    if (rpc.Api.isSimulationSuccess(simulation) && simulation.result) {
+      const rawNative = scValToNative(simulation.result.retval);
       if (!rawNative) return null;
       return parseInvoice(rawNative);
     }
@@ -151,9 +172,8 @@ export async function getFreelancerInvoices(freelancer: string): Promise<Invoice
 
   try {
     const simulation = await rpcServer.simulateTransaction(tx);
-    if (SorobanRpc.Api.isSimulationSuccess(simulation) && simulation.result) {
-      const scValObj = xdr.ScVal.fromXDR(simulation.result.retval, 'base64');
-      const rawNative = scValToNative(scValObj);
+    if (rpc.Api.isSimulationSuccess(simulation) && simulation.result) {
+      const rawNative = scValToNative(simulation.result.retval);
       if (!Array.isArray(rawNative)) return [];
       return rawNative.map(parseInvoice);
     }
@@ -192,9 +212,8 @@ export async function getPayerInvoices(payer: string): Promise<InvoiceData[]> {
 
   try {
     const simulation = await rpcServer.simulateTransaction(tx);
-    if (SorobanRpc.Api.isSimulationSuccess(simulation) && simulation.result) {
-      const scValObj = xdr.ScVal.fromXDR(simulation.result.retval, 'base64');
-      const rawNative = scValToNative(scValObj);
+    if (rpc.Api.isSimulationSuccess(simulation) && simulation.result) {
+      const rawNative = scValToNative(simulation.result.retval);
       if (!Array.isArray(rawNative)) return [];
       return rawNative.map(parseInvoice);
     }
@@ -299,28 +318,5 @@ export async function payInvoice(
   } catch (error: any) {
     console.error('Error in payInvoice:', error);
     throw new Error(error.message || 'Failed to simulate or build pay_invoice transaction');
-  }
-}
-
-// Minimal stub for Account if loading from Horizon fails (e.g. un-funded accounts)
-class Account {
-  private _accountId: string;
-  private _sequence: string;
-
-  constructor(accountId: string, sequence: string) {
-    this._accountId = accountId;
-    this._sequence = sequence;
-  }
-
-  accountId(): string {
-    return this._accountId;
-  }
-
-  sequenceNumber(): string {
-    return this._sequence;
-  }
-
-  incrementSequenceNumber(): void {
-    this._sequence = (BigInt(this._sequence) + 1n).toString();
   }
 }
